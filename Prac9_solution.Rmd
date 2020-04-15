@@ -1,0 +1,232 @@
+---
+title: Introduction to distance sampling
+author: Centre for Research into Ecological and Environmental Modelling  **University of St Andrews**
+subtitle: Workshop, 17-28 February 2020
+date: Exercise 9. Analysis with multipliers
+output: 
+  html_document:
+    number_sections: yes
+    theme: flatly
+    highlight: tango
+    df_print: kable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+```
+
+<div class="alert  alert-success">
+  <strong>Solutions</strong> Analysis with multipliers
+</div>
+
+# Dung survey of deer
+  
+The following code loads the relevant packages and data. The perpendicular distances are measured in centimetres, effort along the transects measured in kilometres and areas in square kilometres.  
+
+```{r, echo=T, eval=T}
+library(Distance)
+data(sikadeer)
+conversion.factor <- convert_units("centimeter", "kilometer", "square kilometer")
+```
+
+Here we did not perform a comprehensive examination of fitting a detection function to the detected pellet groups, however, as a general guideline, we truncated the longest 10% perpendicular distances. 
+
+```{r, echo=T, eval=T, fig.height=4}
+deer.df <- ds(sikadeer, key="hn", truncation="10%", convert.units = conversion.factor)
+plot(deer.df)
+print(deer.df$dht$individuals$summary)
+```
+
+The summary above shows that in blocks F, H and J there was only one transect and, as a consequence, it is not possible to calculate a variance empirically for the encounter rate in those blocks. 
+
+# Estimating decay rate from data
+
+A paper by Laing *et al.* (2003) describes field protocol for collecting data to estimate the mean persistence time of dung or nests to be used as multipliers.  The code segment shown earlier analyses a file of such data via logistic regression to produce an estimate of mean persistence time and its associated uncertainty.
+
+```{r, eval=T, echo=FALSE, fig.height=4}
+# Calculate dung decay rate parameters
+MIKE.persistence <- function(DATA) {
+  
+#  Purpose: calculate mean persistence time (mean time to decay) for dung/nest data 
+#  Input: data frame with at least two columns:
+#         DAYS - calendar day on which dung status was observed
+#         STATE - dung status: 1-intact, 0-decayed
+#  Output: point estimate, standard error and CV of mean persistence time
+#
+#  Attribution: code from Mike Meredith website: 
+#      http://www.mikemeredith.net/blog/2017/Sign_persistence.htm
+#   Citing: CITES elephant protocol
+#      https://cites.org/sites/default/files/common/prog/mike/survey/dung_standards.pdf
+  
+  ##   Fit logistic regression model to STATE on DAYS, extract coefficients
+  dung.glm <- glm(STATE ~ DAYS, data=DATA, family=binomial(link = "logit"))
+  betas <- coefficients(dung.glm)
+  
+  ##   Calculate mean persistence time
+  mean.decay <- -(1+exp(-betas[1])) * log(1+exp(betas[1])) / betas[2]
+  
+  ## Calculate the variance of the estimate
+  vcovar <- vcov(dung.glm)
+  var0 <- vcovar[1,1]  # variance of beta0
+  var1 <- vcovar[2,2]  # variance of beta1
+  covar <- vcovar[2,1] # covariance
+  
+  deriv0 <- -(1-exp(-betas[1]) * log(1+exp(betas[1])))/betas[2]
+  deriv1 <- -mean.decay/betas[2]
+  
+  var.mean <- var0*deriv0^2 + 2*covar*deriv0*deriv1 + var1*deriv1^2
+  
+  ## Calculate the SE and CV and return
+  se.mean <- sqrt(var.mean)
+  cv.mean <- se.mean/mean.decay
+  
+  out <- c(mean.decay, se.mean, 100*cv.mean)
+  names(out) <- c("Mean persistence time", "SE", "%CV")
+  plot(decay$DAYS, jitter(decay$STATE, amount=0.10), xlab="Days since initiation",
+       ylab="Dung persists (yes=1)",
+       main="Eight dung piles revisited over time")
+  curve(predict(dung.glm, data.frame(DAYS=x), type="resp"), add=TRUE)
+  abline(v=mean.decay, lwd=2, lty=3)
+  return(out)
+}
+decay <- read.csv(file="IntroDS_9.1.csv")
+persistence.time <- MIKE.persistence(decay)
+print(persistence.time)
+```
+
+Using these results, the multipliers can be specified:
+
+```{r, echo=T, eval=T}
+# Create list of multipliers
+mult <- list(creation = data.frame(rate=25, SE=0),
+             decay    = data.frame(rate=163, SE=14))
+print(mult)
+# Obtain animal estimates - overall estimate, weight by effort 
+deer_ests <- dht2(deer.df, flatfile=sikadeer, strat_formula=~Region.Label,
+                  convert_units=conversion.factor, multipliers=mult, 
+                  stratification="effort_sum", total_area = 100)
+print(deer_ests, report="abundance")
+```
+
+There are a few things to notice:
+
++ overall estimate of density 
+  - most effort took place in woodland A where deer density was high. Therefore, the overall estimate is between the estimated density in woodland A and the lower densities in the other woodlands. 
++ components of variance 
+  - we now have uncertainty associated with the encounter rate, detection function and decay rate (note there was no uncertainty associated with the production rate) and so the components of variation for all three components are provided. 
+
+In woodland A, there were 13 transects on which over 1,200 pellet groups were detected: uncertainty in the estimated density was 19\% and the variance components were apportioned as detection probability 4\%, encounter rate 76\% and multipliers 20\%. 
+
+In woodland E, there were 5 transects and 30 pellet groups resulting in a coefficient of variation (CV) of 48\%: the variance components were apportioned as detection probability 0.7\%, encounter rate 96\% and multipliers 3\%. 
+
+In woodland F only a single transect was placed and the CV of density of 9\% was apportioned as detection probability 17\% and multipliers 83\%. Do you trust this assessment of uncertainty in the density of deer in this woodland? We are missing a component of variation because we were negligent in placing only a single transect in this woodland and so are left to 'assume' there is no variability in encounter rate in this woodland. 
+
+By the same token, we are left to assume there is no variability in production rates between deer because we have not included a measure of uncertainty in this facet of our analysis. 
+
+# Cue counting survey of whales
+
+```{r, echo=T, eval=T}
+data(CueCountingExample)
+head(CueCountingExample, n=3)
+# Sort out effort
+CueCountingExample$Effort <- CueCountingExample$Search.time
+# Obtain the cue rates from the survey data
+cuerates <- CueCountingExample[ ,c("Cue.rate", "Cue.rate.SE", "Cue.rate.df")]
+cuerates <- unique(cuerates)
+names(cuerates) <- c("rate", "SE", "df")
+# Create multiplier object
+mult <- list(creation=cuerates)
+print(mult)
+```
+
+The estimated cue rate, $\hat \nu$, is 25 cues per unit time (per hour in this case). Its standard error is 5, therefore the CV of cue rate is $5/25 = 0.2$ (20\%).  
+
+```{r, echo=T, eval=T}
+# Tidy up data by getting rid of those columns - we don't need them any more
+CueCountingExample[ ,c("Cue.rate", "Cue.rate.SE", "Cue.rate.df", "Sample.Fraction", 
+                       "Sample.Fraction.SE")] <- list(NULL)
+# Set truncation distance
+trunc <- 1.2
+# Half normal detection function
+whale.df.hn <- ds(CueCountingExample, key="hn", transect="point", adjustment=NULL,
+                  truncation=trunc)
+# Hazard rate detection function
+whale.df.hr <- ds(CueCountingExample, key="hr", transect="point", adjustment=NULL,
+                  truncation=trunc)
+# Compare models
+summarize_ds_models(whale.df.hn, whale.df.hr, output = "plain")
+```
+
+Half the circle (point transect) was searched and so the sampling fraction $\phi /2\pi = 0.5$. Therefore, $\phi = \pi$ ($\phi$ must be in radians).
+
+The following commands obtain density estimates assuming no stratification (`strat_formula=~1`).  
+
+```{r, echo=T, eval=T}
+# Unstratified estimates 
+whale.est.hn <- dht2(whale.df.hn, flatfile=CueCountingExample, strat_formula=~1, 
+                     multipliers=mult, sample_fraction=0.5)
+print(whale.est.hn, report="abundance")
+whale.est.hr <- dht2(whale.df.hr, flatfile=CueCountingExample, strat_formula=~1, 
+                     multipliers=mult, sample_fraction=0.5)
+print(whale.est.hr, report="abundance")
+```
+
+A half normal detection function was chosen and whale abundance was estimated to be 13,654 whales with a 95\% confidence interval (6,112: 30,500). 
+
+Note the large difference between the half normal estimate and the estimate from the hazard rate model, which is 11,590 whales, with 95% confidence interval (5,017; 26773). Remember that the key parameter in a cue counting analysis is $h(0)$, the slope of the fitted pdf to the observed data at distance zero. The difference between the estimates for the different key function is the difference between these slopes for the two models (Fig. 2):
+
+```{r, echo=T, eval=T, fig.height=4, fig.cap="Probability density functions for the two fitted models."}
+# Plot pds
+par(mfrow=c(1,2))
+# PDFs
+plot(whale.df.hn, pdf=TRUE, main="Half normal")
+plot(whale.df.hr, pdf=TRUE, main="Hazard rate")
+```
+
+Cue counting estimates of detection probability are more volatile than those from line transect surveys, because on a cue counting survey you have few data where you need it most to estimate $h(0)$ - namely at distances close to zero. As a consequence, cue-counting surveys require higher cue sample size for reliable estimation than samples of animals for line transect surveys.
+
+Don't worry too much about the apparent lack of fit in the first interval, or two, in Figure 2 - remember the sample size is very small in these intervals. Use the plot above and the goodness-of-fit statistics to guide you about the fit of your model.
+
+```{r, echo=FALSE, eval=FALSE, fig.height=4, fig.cap="Detection probability functions."}
+# Detection functions
+par(mfrow=c(1,2))
+plot(whale.df.hn, main="Half normal")
+plot(whale.df.hr, main="Hazard rate")
+```
+
+
+# Cue counting survey of songbirds (optional)
+
+```{r, echo=T, eval=T}
+data(wren_cuecount)
+# Extract the cue rate information
+cuerate <- unique(wren_cuecount[ , c("Cue.rate","Cue.rate.SE")])
+names(cuerate) <- c("rate", "SE")
+mult <- list(creation=cuerate)
+print(mult)
+# Search time is the effort - this is 2 * 5min visits
+wren_cuecount$Effort <- wren_cuecount$Search.time
+# Fit hazard rate detection function model
+w3.hr <- ds(wren_cuecount, transect="point", key="hr", adjustment=NULL, truncation=92.5)
+```
+
+The sampling fraction for these data will be 1 because the full circle around the observer was searched. 
+
+```{r, echo=T, eval=T}
+conversion.factor <- convert_units("meter", NULL, "hectare")
+w3.est <- dht2(w3.hr, flatfile=wren_cuecount, strat_formula=~1,
+               multipliers=mult, convert_units=conversion.factor)
+# NB "Effort" here is sum(Search.time) in minutes
+# NB "CoveredArea" here is pi * w^2 * sum(Search.time)
+# Obtain density 
+print(w3.est, report="density")
+```
+
+Note the large proportion of the uncertainty in winter wren density stems from variability in cue (song) rate. Analyses of the cue count data are necessarily rather subjective as the data show substantial over-dispersion (a single bird may give many song bursts all from the same location during a five minute count). In this circumstance, goodness-of-fit tests are misleading and care must be taken not to over-fit the data (i.e. fit a complicated detection function).
+
+```{r, echo=T, eval=T, fig.height=4}
+par(mfrow=c(1,2))
+plot(w3.hr, pdf=TRUE, main="Cue distances of winter wren.")
+gof_ds(w3.hr)
+```
+
