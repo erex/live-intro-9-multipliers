@@ -1,7 +1,7 @@
 ---
 title: Introduction to distance sampling
 author: Centre for Research into Ecological and Environmental Modelling  **University of St Andrews**
-subtitle: Workshop, 17-28 February 2020
+subtitle: Workshop, 04-15 May 2020
 date: Exercise 9. Analysis with multipliers
 output: 
   html_document:
@@ -124,7 +124,7 @@ As stated above, we want an object which contains information on the dung produc
 # Create list of multipliers
 mult <- list(creation = data.frame(rate=25, SE=0),
 #             decay    = data.frame(rate=XX, SE=YY))
-mult
+print(mult)
 ```
 
 The final step is to use these multipliers to convert $\hat D_{\textrm{pellet groups}}$ to $\hat D_{\textrm{deer}}$ (as in the equations above) - for this we need to employ the `dht2` function. In the command below the `multipliers=` argument allows us to specify the rates and standard errors. There are a couple of other function arguments that need some explanation:
@@ -171,7 +171,7 @@ names(cuerates) <- c("rate", "SE", "df")
 
 # Create multiplier object
 mult <- list(creation=cuerates)
-mult
+print(mult)
 ```
 
 Decide on a truncation distance and fit a suitable detection function to these data: call your selected model `whale.df`. Remember that these data are treated as coming from a point transect. 
@@ -182,7 +182,7 @@ Use the `dht2` function to estimate whale abundance in the survey region, togeth
 # Estimate density - what is the sampling fraction?
 whale.est <- dht2(whale.df, flatfile=CueCountingExample, strat_formula=~1,
                   multipliers=mult, sample_fraction=?)
-whale.est
+print(whale.est)
 ```
 
 # Cue counting of songbirds (optional)

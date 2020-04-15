@@ -439,7 +439,7 @@ summary {
 
 
 <h1 class="title toc-ignore">Introduction to distance sampling</h1>
-<h3 class="subtitle">Workshop, 17-28 February 2020</h3>
+<h3 class="subtitle">Workshop, 04-15 May 2020</h3>
 <h4 class="author">Centre for Research into Ecological and Environmental Modelling <strong>University of St Andrews</strong></h4>
 <h4 class="date">Exercise 9. Analysis with multipliers</h4>
 
@@ -538,7 +538,7 @@ Location of sika deer survey in southern Scotland and the survey design (from Ma
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Create list of multipliers</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a>mult &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">creation =</span> <span class="kw">data.frame</span>(<span class="dt">rate=</span><span class="dv">25</span>, <span class="dt">SE=</span><span class="dv">0</span>),</span>
 <span id="cb3-3"><a href="#cb3-3"></a><span class="co">#             decay    = data.frame(rate=XX, SE=YY))</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>mult</span></code></pre></div>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="kw">print</span>(mult)</span></code></pre></div>
 <p>The final step is to use these multipliers to convert <span class="math inline">\(\hat D_{\textrm{pellet groups}}\)</span> to <span class="math inline">\(\hat D_{\textrm{deer}}\)</span> (as in the equations above) - for this we need to employ the <code>dht2</code> function. In the command below the <code>multipliers=</code> argument allows us to specify the rates and standard errors. There are a couple of other function arguments that need some explanation:</p>
 <ul>
 <li><code>strat_formula=~Region.Label</code> is specified to take into account the design (i.e. different woodlands or blocks).</li>
@@ -573,13 +573,13 @@ Location of sika deer survey in southern Scotland and the survey design (from Ma
 <span id="cb6-8"><a href="#cb6-8"></a></span>
 <span id="cb6-9"><a href="#cb6-9"></a><span class="co"># Create multiplier object</span></span>
 <span id="cb6-10"><a href="#cb6-10"></a>mult &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">creation=</span>cuerates)</span>
-<span id="cb6-11"><a href="#cb6-11"></a>mult</span></code></pre></div>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="kw">print</span>(mult)</span></code></pre></div>
 <p>Decide on a truncation distance and fit a suitable detection function to these data: call your selected model <code>whale.df</code>. Remember that these data are treated as coming from a point transect.</p>
 <p>Use the <code>dht2</code> function to estimate whale abundance in the survey region, together with a 95% confidence interval. As well as specifying the multipliers, the sampling fraction argument (<code>sample_fraction=</code>) also needs to be specified - in this case, half the circle was searched and so what do you think the sampling fraction should be? In the command below, density estimates are obtained unstratified (i.e. ignoring the survey regions).</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># Estimate density - what is the sampling fraction?</span></span>
 <span id="cb7-2"><a href="#cb7-2"></a>whale.est &lt;-<span class="st"> </span><span class="kw">dht2</span>(whale.df, <span class="dt">flatfile=</span>CueCountingExample, <span class="dt">strat_formula=</span><span class="op">~</span><span class="dv">1</span>,</span>
 <span id="cb7-3"><a href="#cb7-3"></a>                  <span class="dt">multipliers=</span>mult, <span class="dt">sample_fraction=</span>?)</span>
-<span id="cb7-4"><a href="#cb7-4"></a>whale.est</span></code></pre></div>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="kw">print</span>(whale.est)</span></code></pre></div>
 </div>
 <div id="cue-counting-of-songbirds-optional" class="section level1">
 <h1><span class="header-section-number">4</span> Cue counting of songbirds (optional)</h1>
