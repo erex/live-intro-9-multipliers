@@ -1,7 +1,7 @@
 ---
 title: Introduction to distance sampling
 author: Centre for Research into Ecological and Environmental Modelling  **University of St Andrews**
-subtitle: Workshop, 04-15 May 2020
+subtitle: Workshop, 06-17 July 2020
 date: Exercise 9. Analysis with multipliers
 output: 
   html_document:
@@ -14,7 +14,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-We consider indirect methods to estimate abundance and hence include multipliers in the abundance calculations. The first problem uses data from a dung survey of deer and there are two levels of multipliers that need to be accounted for (dung production rate and dung decay rate). Problems 2 and 3 deal with instantaneous cues and so only cue rate needs to be taken into account. 
+We consider indirect methods to estimate abundance and hence include multipliers in the abundance calculations. The first problem uses data from a dung survey of deer and there are two levels of multipliers that need to be accounted for (dung production rate and dung decay rate). Data sets [2](#cue-counting-survey-of-whales) and [3](#cue-counting-of-songbirds-optional) deal with instantaneous cues and so only cue rate needs to be taken into account. 
 
 # Objectives
 
@@ -168,7 +168,6 @@ cuerates <- CueCountingExample[ ,c("Cue.rate", "Cue.rate.SE", "Cue.rate.df")]
 cuerates <- unique(cuerates)
 # Rename columns 
 names(cuerates) <- c("rate", "SE", "df")
-
 # Create multiplier object
 mult <- list(creation=cuerates)
 print(mult)
@@ -185,7 +184,7 @@ whale.est <- dht2(whale.df, flatfile=CueCountingExample, strat_formula=~1,
 print(whale.est)
 ```
 
-# Cue counting of songbirds (optional)
+# Cue counting of songbirds optional
 
 Remember the wren data that was introduced in the point transect exercises (Exercise 5): another data collection method that was used was cue counting. In this case, the cue was a song burst. These data are stored in `wren_cuecount` in the `Distance` package. 
 

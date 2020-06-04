@@ -439,14 +439,14 @@ summary {
 
 
 <h1 class="title toc-ignore">Introduction to distance sampling</h1>
-<h3 class="subtitle">Workshop, 04-15 May 2020</h3>
+<h3 class="subtitle">Workshop, 06-17 July 2020</h3>
 <h4 class="author">Centre for Research into Ecological and Environmental Modelling <strong>University of St Andrews</strong></h4>
 <h4 class="date">Exercise 9. Analysis with multipliers</h4>
 
 </div>
 
 
-<p>We consider indirect methods to estimate abundance and hence include multipliers in the abundance calculations. The first problem uses data from a dung survey of deer and there are two levels of multipliers that need to be accounted for (dung production rate and dung decay rate). Problems 2 and 3 deal with instantaneous cues and so only cue rate needs to be taken into account.</p>
+<p>We consider indirect methods to estimate abundance and hence include multipliers in the abundance calculations. The first problem uses data from a dung survey of deer and there are two levels of multipliers that need to be accounted for (dung production rate and dung decay rate). Data sets <a href="#cue-counting-survey-of-whales">2</a> and <a href="#cue-counting-of-songbirds-optional">3</a> deal with instantaneous cues and so only cue rate needs to be taken into account.</p>
 <div id="objectives" class="section level1">
 <h1><span class="header-section-number">1</span> Objectives</h1>
 <p>The objectives of this exercise are to</p>
@@ -570,10 +570,9 @@ Location of sika deer survey in southern Scotland and the survey design (from Ma
 <span id="cb6-5"><a href="#cb6-5"></a>cuerates &lt;-<span class="st"> </span><span class="kw">unique</span>(cuerates)</span>
 <span id="cb6-6"><a href="#cb6-6"></a><span class="co"># Rename columns </span></span>
 <span id="cb6-7"><a href="#cb6-7"></a><span class="kw">names</span>(cuerates) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;rate&quot;</span>, <span class="st">&quot;SE&quot;</span>, <span class="st">&quot;df&quot;</span>)</span>
-<span id="cb6-8"><a href="#cb6-8"></a></span>
-<span id="cb6-9"><a href="#cb6-9"></a><span class="co"># Create multiplier object</span></span>
-<span id="cb6-10"><a href="#cb6-10"></a>mult &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">creation=</span>cuerates)</span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="kw">print</span>(mult)</span></code></pre></div>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co"># Create multiplier object</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a>mult &lt;-<span class="st"> </span><span class="kw">list</span>(<span class="dt">creation=</span>cuerates)</span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="kw">print</span>(mult)</span></code></pre></div>
 <p>Decide on a truncation distance and fit a suitable detection function to these data: call your selected model <code>whale.df</code>. Remember that these data are treated as coming from a point transect.</p>
 <p>Use the <code>dht2</code> function to estimate whale abundance in the survey region, together with a 95% confidence interval. As well as specifying the multipliers, the sampling fraction argument (<code>sample_fraction=</code>) also needs to be specified - in this case, half the circle was searched and so what do you think the sampling fraction should be? In the command below, density estimates are obtained unstratified (i.e. ignoring the survey regions).</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="co"># Estimate density - what is the sampling fraction?</span></span>
@@ -582,7 +581,7 @@ Location of sika deer survey in southern Scotland and the survey design (from Ma
 <span id="cb7-4"><a href="#cb7-4"></a><span class="kw">print</span>(whale.est)</span></code></pre></div>
 </div>
 <div id="cue-counting-of-songbirds-optional" class="section level1">
-<h1><span class="header-section-number">4</span> Cue counting of songbirds (optional)</h1>
+<h1><span class="header-section-number">4</span> Cue counting of songbirds optional</h1>
 <p>Remember the wren data that was introduced in the point transect exercises (Exercise 5): another data collection method that was used was cue counting. In this case, the cue was a song burst. These data are stored in <code>wren_cuecount</code> in the <code>Distance</code> package.</p>
 <p>Following a similar approach to that of the whale data, estimate a detection function of songs, create a multipliers object and include this in the <code>dht2</code> function to estimate wren density. Call this <code>w3.est</code>). There are a few things that will be useful to know:</p>
 <ul>
