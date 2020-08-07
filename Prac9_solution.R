@@ -1,20 +1,21 @@
-## ----setup, include=FALSE-----------------------------------------------------------------
+## ----setup, include=FALSE-----------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+options(width=90)
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 library(Distance)
 data(sikadeer)
 conversion.factor <- convert_units("centimeter", "kilometer", "square kilometer")
 
 
-## ---- echo=T, eval=T, fig.height=4--------------------------------------------------------
+## ---- echo=T, eval=T, fig.height=4--------------------------------------------
 deer.df <- ds(sikadeer, key="hn", truncation="10%", convert.units = conversion.factor)
 plot(deer.df)
 print(deer.df$dht$individuals$summary)
 
 
-## ---- eval=T, echo=FALSE, fig.height=4----------------------------------------------------
+## ---- eval=T, echo=FALSE, fig.height=4----------------------------------------
 # Calculate dung decay rate parameters
 MIKE.persistence <- function(DATA) {
   
@@ -65,7 +66,7 @@ persistence.time <- MIKE.persistence(decay)
 print(persistence.time)
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 # Create list of multipliers
 mult <- list(creation = data.frame(rate=25, SE=0),
              decay    = data.frame(rate=163, SE=14))
@@ -77,7 +78,7 @@ deer_ests <- dht2(deer.df, flatfile=sikadeer, strat_formula=~Region.Label,
 print(deer_ests, report="abundance")
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 data(CueCountingExample)
 head(CueCountingExample, n=3)
 # Sort out effort
@@ -91,7 +92,7 @@ mult <- list(creation=cuerates)
 print(mult)
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 # Tidy up data by getting rid of those columns - we don't need them any more
 CueCountingExample[ ,c("Cue.rate", "Cue.rate.SE", "Cue.rate.df", "Sample.Fraction", 
                        "Sample.Fraction.SE")] <- list(NULL)
@@ -104,10 +105,10 @@ whale.df.hn <- ds(CueCountingExample, key="hn", transect="point", adjustment=NUL
 whale.df.hr <- ds(CueCountingExample, key="hr", transect="point", adjustment=NULL,
                   truncation=trunc)
 # Compare models
-summarize_ds_models(whale.df.hn, whale.df.hr, output = "plain")
+knitr::kable(summarize_ds_models(whale.df.hn, whale.df.hr), digits = 3)
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 # Unstratified estimates 
 whale.est.hn <- dht2(whale.df.hn, flatfile=CueCountingExample, strat_formula=~1, 
                      multipliers=mult, sample_fraction=0.5)
@@ -118,9 +119,8 @@ print(whale.est.hr, report="abundance")
 
 
 ## ---- echo=T, eval=T, fig.height=4, fig.cap="Probability density functions for the two fitted models."----
-# Plot pds
+# Plot pdfs
 par(mfrow=c(1,2))
-# PDFs
 plot(whale.df.hn, pdf=TRUE, main="Half normal")
 plot(whale.df.hr, pdf=TRUE, main="Hazard rate")
 
@@ -132,7 +132,7 @@ plot(whale.df.hr, pdf=TRUE, main="Hazard rate")
 ## plot(whale.df.hr, main="Hazard rate")
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 data(wren_cuecount)
 # Extract the cue rate information
 cuerate <- unique(wren_cuecount[ , c("Cue.rate","Cue.rate.SE")])
@@ -145,7 +145,7 @@ wren_cuecount$Effort <- wren_cuecount$Search.time
 w3.hr <- ds(wren_cuecount, transect="point", key="hr", adjustment=NULL, truncation=92.5)
 
 
-## ---- echo=T, eval=T----------------------------------------------------------------------
+## ---- echo=T, eval=T----------------------------------------------------------
 conversion.factor <- convert_units("meter", NULL, "hectare")
 w3.est <- dht2(w3.hr, flatfile=wren_cuecount, strat_formula=~1,
                multipliers=mult, convert_units=conversion.factor)
@@ -155,7 +155,7 @@ w3.est <- dht2(w3.hr, flatfile=wren_cuecount, strat_formula=~1,
 print(w3.est, report="density")
 
 
-## ---- echo=T, eval=T, fig.height=4--------------------------------------------------------
+## ---- echo=T, eval=T, fig.height=4--------------------------------------------
 par(mfrow=c(1,2))
 plot(w3.hr, pdf=TRUE, main="Cue distances of winter wren.")
 gof_ds(w3.hr)

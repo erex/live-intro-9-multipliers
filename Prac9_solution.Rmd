@@ -1,18 +1,15 @@
 ---
 title: Introduction to distance sampling
-author: Centre for Research into Ecological and Environmental Modelling  **University of St Andrews**
-subtitle: Workshop, 06-17 July 2020
-date: Exercise 9. Analysis with multipliers
+author: Centre for Research into Ecological and Environmental Modelling <br> **University of St Andrews**
+date: Exercise 9. Analysis with multipliers <br> September 2020
 output: 
-  html_document:
-    number_sections: yes
-    theme: flatly
+  rmdformats::readthedown:
     highlight: tango
-    df_print: kable
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
+options(width=90)
 ```
 
 <div class="alert  alert-success">
@@ -154,7 +151,7 @@ whale.df.hn <- ds(CueCountingExample, key="hn", transect="point", adjustment=NUL
 whale.df.hr <- ds(CueCountingExample, key="hr", transect="point", adjustment=NULL,
                   truncation=trunc)
 # Compare models
-summarize_ds_models(whale.df.hn, whale.df.hr, output = "plain")
+knitr::kable(summarize_ds_models(whale.df.hn, whale.df.hr), digits = 3)
 ```
 
 Half the circle (point transect) was searched and so the sampling fraction $\phi /2\pi = 0.5$. Therefore, $\phi = \pi$ ($\phi$ must be in radians).
@@ -176,9 +173,8 @@ A half normal detection function was chosen and whale abundance was estimated to
 Note the large difference between the half normal estimate and the estimate from the hazard rate model, which is 11,590 whales, with 95% confidence interval (5,017; 26773). Remember that the key parameter in a cue counting analysis is $h(0)$, the slope of the fitted pdf to the observed data at distance zero. The difference between the estimates for the different key function is the difference between these slopes for the two models (Fig. 2):
 
 ```{r, echo=T, eval=T, fig.height=4, fig.cap="Probability density functions for the two fitted models."}
-# Plot pds
+# Plot pdfs
 par(mfrow=c(1,2))
-# PDFs
 plot(whale.df.hn, pdf=TRUE, main="Half normal")
 plot(whale.df.hr, pdf=TRUE, main="Hazard rate")
 ```
