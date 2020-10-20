@@ -1,10 +1,12 @@
 ---
 title: Introduction to distance sampling
 author: Centre for Research into Ecological and Environmental Modelling <br> **University of St Andrews**
-date: Exercise 9. Analysis with multipliers <br> September 2020
+date: Exercise 9. Analysis with multipliers <br> November 2020
 output: 
   rmdformats::readthedown:
     highlight: tango
+bibliography: references.bib
+csl: apa.csl
 ---
 
 ```{r setup, include=FALSE}
@@ -12,13 +14,13 @@ knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
 options(width=90)
 ```
 
-<div class="alert  alert-success">
-  <strong>Solutions</strong> Analysis with multipliers
-</div>
+::: {.alert .alert-success}
+<strong>Solutions</strong> Analysis with multipliers
+:::
 
 # Dung survey of deer
-  
-The following code loads the relevant packages and data. The perpendicular distances are measured in centimetres, effort along the transects measured in kilometres and areas in square kilometres.  
+
+The following code loads the relevant packages and data. The perpendicular distances are measured in centimetres, effort along the transects measured in kilometres and areas in square kilometres.
 
 ```{r, echo=T, eval=T}
 library(Distance)
@@ -26,7 +28,7 @@ data(sikadeer)
 conversion.factor <- convert_units("centimeter", "kilometer", "square kilometer")
 ```
 
-Here we did not perform a comprehensive examination of fitting a detection function to the detected pellet groups, however, as a general guideline, we truncated the longest 10% perpendicular distances. 
+Here we did not perform a comprehensive examination of fitting a detection function to the detected pellet groups, however, as a general guideline, we truncated the longest 10% perpendicular distances.
 
 ```{r, echo=T, eval=T, fig.height=4}
 deer.df <- ds(sikadeer, key="hn", truncation="10%", convert.units = conversion.factor)
@@ -34,11 +36,11 @@ plot(deer.df)
 print(deer.df$dht$individuals$summary)
 ```
 
-The summary above shows that in blocks F, H and J there was only one transect and, as a consequence, it is not possible to calculate a variance empirically for the encounter rate in those blocks. 
+The summary above shows that in blocks F, H and J there was only one transect and, as a consequence, it is not possible to calculate a variance empirically for the encounter rate in those blocks.
 
 # Estimating decay rate from data
 
-A paper by Laing *et al.* (2003) describes field protocol for collecting data to estimate the mean persistence time of dung or nests to be used as multipliers.  The code segment shown earlier analyses a file of such data via logistic regression to produce an estimate of mean persistence time and its associated uncertainty.
+A paper by Laing *et al.* [-@Laietal03] describes field protocol for collecting data to estimate the mean persistence time of dung or nests to be used as multipliers. The code segment shown earlier analyses a file of such data via logistic regression to produce an estimate of mean persistence time and its associated uncertainty.
 
 ```{r, eval=T, echo=FALSE, fig.height=4}
 # Calculate dung decay rate parameters
@@ -107,18 +109,21 @@ print(deer_ests, report="abundance")
 
 There are a few things to notice:
 
-+ overall estimate of density 
-  - most effort took place in woodland A where deer density was high. Therefore, the overall estimate is between the estimated density in woodland A and the lower densities in the other woodlands. 
-+ components of variance 
-  - we now have uncertainty associated with the encounter rate, detection function and decay rate (note there was no uncertainty associated with the production rate) and so the components of variation for all three components are provided. 
+-   overall estimate of density
 
-In woodland A, there were 13 transects on which over 1,200 pellet groups were detected: uncertainty in the estimated density was 19\% and the variance components were apportioned as detection probability 4\%, encounter rate 76\% and multipliers 20\%. 
+    -   most effort took place in woodland A where deer density was high. Therefore, the overall estimate is between the estimated density in woodland A and the lower densities in the other woodlands.
 
-In woodland E, there were 5 transects and 30 pellet groups resulting in a coefficient of variation (CV) of 48\%: the variance components were apportioned as detection probability 0.7\%, encounter rate 96\% and multipliers 3\%. 
+-   components of variance
 
-In woodland F only a single transect was placed and the CV of density of 9\% was apportioned as detection probability 17\% and multipliers 83\%. Do you trust this assessment of uncertainty in the density of deer in this woodland? We are missing a component of variation because we were negligent in placing only a single transect in this woodland and so are left to 'assume' there is no variability in encounter rate in this woodland. 
+    -   we now have uncertainty associated with the encounter rate, detection function and decay rate (note there was no uncertainty associated with the production rate) and so the components of variation for all three components are provided.
 
-By the same token, we are left to assume there is no variability in production rates between deer because we have not included a measure of uncertainty in this facet of our analysis. 
+In woodland A, there were 13 transects on which over 1,200 pellet groups were detected: uncertainty in the estimated density was 19% and the variance components were apportioned as detection probability 4%, encounter rate 76% and multipliers 20%.
+
+In woodland E, there were 5 transects and 30 pellet groups resulting in a coefficient of variation (CV) of 48%: the variance components were apportioned as detection probability 0.7%, encounter rate 96% and multipliers 3%.
+
+In woodland F only a single transect was placed and the CV of density of 9% was apportioned as detection probability 17% and multipliers 83%. Do you trust this assessment of uncertainty in the density of deer in this woodland? We are missing a component of variation because we were negligent in placing only a single transect in this woodland and so are left to 'assume' there is no variability in encounter rate in this woodland.
+
+By the same token, we are left to assume there is no variability in production rates between deer because we have not included a measure of uncertainty in this facet of our analysis.
 
 # Cue counting survey of whales
 
@@ -136,7 +141,7 @@ mult <- list(creation=cuerates)
 print(mult)
 ```
 
-The estimated cue rate, $\hat \nu$, is 25 cues per unit time (per hour in this case). Its standard error is 5, therefore the CV of cue rate is $5/25 = 0.2$ (20\%).  
+The estimated cue rate, $\hat \nu$, is 25 cues per unit time (per hour in this case). Its standard error is 5, therefore the CV of cue rate is $5/25 = 0.2$ (20%).
 
 ```{r, echo=T, eval=T}
 # Tidy up data by getting rid of those columns - we don't need them any more
@@ -156,7 +161,7 @@ knitr::kable(summarize_ds_models(whale.df.hn, whale.df.hr), digits = 3)
 
 Half the circle (point transect) was searched and so the sampling fraction $\phi /2\pi = 0.5$. Therefore, $\phi = \pi$ ($\phi$ must be in radians).
 
-The following commands obtain density estimates assuming no stratification (`strat_formula=~1`).  
+The following commands obtain density estimates assuming no stratification (`strat_formula=~1`).
 
 ```{r, echo=T, eval=T}
 # Unstratified estimates 
@@ -168,7 +173,7 @@ whale.est.hr <- dht2(whale.df.hr, flatfile=CueCountingExample, strat_formula=~1,
 print(whale.est.hr, report="abundance")
 ```
 
-A half normal detection function was chosen and whale abundance was estimated to be 13,654 whales with a 95\% confidence interval (6,112: 30,500). 
+A half normal detection function was chosen and whale abundance was estimated to be 13,654 whales with a 95% confidence interval (6,112: 30,500).
 
 Note the large difference between the half normal estimate and the estimate from the hazard rate model, which is 11,590 whales, with 95% confidence interval (5,017; 26773). Remember that the key parameter in a cue counting analysis is $h(0)$, the slope of the fitted pdf to the observed data at distance zero. The difference between the estimates for the different key function is the difference between these slopes for the two models (Fig. 2):
 
@@ -190,7 +195,6 @@ plot(whale.df.hn, main="Half normal")
 plot(whale.df.hr, main="Hazard rate")
 ```
 
-
 # Cue counting survey of songbirds (optional)
 
 ```{r, echo=T, eval=T}
@@ -206,7 +210,7 @@ wren_cuecount$Effort <- wren_cuecount$Search.time
 w3.hr <- ds(wren_cuecount, transect="point", key="hr", adjustment=NULL, truncation=92.5)
 ```
 
-The sampling fraction for these data will be 1 because the full circle around the observer was searched. 
+The sampling fraction for these data will be 1 because the full circle around the observer was searched.
 
 ```{r, echo=T, eval=T}
 conversion.factor <- convert_units("meter", NULL, "hectare")
@@ -226,3 +230,4 @@ plot(w3.hr, pdf=TRUE, main="Cue distances of winter wren.")
 gof_ds(w3.hr)
 ```
 
+# References
