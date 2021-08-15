@@ -162,13 +162,13 @@ woo.oh <- ds(data=newsparrow, truncation=dettrunc, formula=~obs+height,
              transect=surveytype, quiet=TRUE)
 woo.os <- ds(data=newsparrow, truncation=dettrunc, formula=~obs+shrubclass, 
              transect=surveytype, quiet=TRUE)
-woo.h <- ds(data=newsparrow, truncation=dettrunc, formula=~height, 
-            transect=surveytype, quiet=TRUE)
+# woo.h <- ds(data=newsparrow, truncation=dettrunc, formula=~height, 
+#             transect=surveytype, quiet=TRUE)
 woo.s <- ds(data=newsparrow, truncation=dettrunc, formula=~shrubclass, 
             transect=surveytype, quiet=TRUE)
 woo <- ds(data=newsparrow, truncation=dettrunc, formula=~1, 
           transect=surveytype, quiet=TRUE)
-knitr::kable(summarize_ds_models(woo.o,  woo.oh, woo.os, woo.h,  woo.s, woo), digits=3, 
+knitr::kable(summarize_ds_models(woo.o,  woo.oh, woo.os, woo.s, woo), digits=3, 
              caption="Halfnormal detection function model selection of covariates.", row.names = FALSE)
 ```
 
