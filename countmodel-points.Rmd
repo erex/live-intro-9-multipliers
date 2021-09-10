@@ -1,0 +1,442 @@
+---
+title: "Effect of habitat covariate upon estimated density"
+description: "Two stage analysis propagating detection function uncertainty into GLM predictions.  Example using point transect data of sage thrasher"
+author:
+  - name: Eric Rexstad 
+    url: http://distancesampling.org
+    affiliation: CREEM, Univ of St Andrews
+    affiliation_url: https://creem.st-andrews.ac.uk
+date: "`r Sys.Date()`"
+output: 
+  distill::distill_article:
+    toc: true
+    toc_depth: 2
+bibliography: referencesglm.bib    
+csl: apa.csl
+---
+
+```{css, echo=FALSE}
+.infobox {
+  font-size: 80%;
+  padding: 1em 1em 1em 4em;
+  margin-bottom: 2px;
+  border: 2px solid orange;
+  border-radius: 10px;
+  background: #9fd6f7  5px center/3em no-repeat;
+}
+
+.caution {
+  background-image: url("tip.png");
+}
+
+```
+
+```{r setup, include=FALSE}
+library(knitr)
+library(distill)
+library(tidyverse)
+library(patchwork)
+
+## Global options
+options(max.print="105")
+opts_chunk$set(echo=TRUE,
+	             cache=FALSE,
+               prompt=FALSE,
+               tidy=FALSE,
+               comment=NA,
+               message=FALSE,
+               warning=FALSE)
+opts_knit$set(width=105)
+```
+
+Investigators often wish to make inferences from their surveys beyond simply reporting "What is the animal density?" Ecological curiosity desires answers to questions such as
+
+> What effect does change in habitat characteristic X have upon animal
+> density?
+
+Answers to such questions are sought through use of generalised linear modelling (of which analysis of variance and regression are subsets). However, simple modelling of counts fails to take into account imperfect detectability. When detectability is imperfect, the response variable possesses uncertainty derived from uncertainty in the probability of detection.
+
+A number of authors have recognised the need to incorporate this uncertainty into the analysis of habitat effects upon estimated density. One approach (employed here) conducts the analyses in two stages: first detectability is estimated and $P_a$ or $\mu$ or $\rho$ is estimated. A second stage fits a model to count data adjusting using the estimated detectability parameters. This approach is exemplified by @Buckland2009a. Alternatively, single state approaches have been
+described by @Oedekoven2013 and @Oedekoven2014.
+
+Propagation of uncertainty from the first step into the second step is accomplished via a bootstrap, with the effective area sampled serving as an offset in the generalised linear modelling (GLM) analysis.  The method described herein only applies when the link function is the `log` link, for the following reason.
+
+We want to model bird density in our GLM, derived from the counts we observed on each transect.  Density is defined as
+
+$$D = \frac{n}{\text{Eff Area}} $$
+where $n$ is the count on each transect.
+
+Therefore
+
+$$\frac{n}{\text{Eff Area}} = e^{\text{linear predictor}}$$
+when using a `log` link function.
+
+Our count model works with `n` as the response variable
+
+$$
+\begin{align}
+n &= \text{Eff Area} \cdot e^{\text{linear predictor}} \\
+&= e^{\text{linear predictor} + log(\text{Eff Area})}
+\end{align}
+$$
+
+making $log(\text{Eff Area})$ the offset.  If other link functions are used, the offset will be different.
+
+# Ecological question and data
+
+We present two examples of such analyses, using data from the package `RDistance` [@McDonald2019].  In both cases, we fit detection detection functions to data using the `Distance` package @Miller2019. This example describes an analysis of 120 point transects examining habitat influences upon density of sage thrashers *(Oreoscoptes montanus)* [@carlisle_nontarget_2018].  The data organisation consists of a data frame containing information on detections and another data frame containing information for each transect.  
+
+# Programming matters
+
+Before walking through the code, we provide some guidance regarding adaptation of this approach for your data.  The code is not sufficiently modularised so that you can merely slot your data into a function.  There are matters to consider regarding data organisation, naming of data frame columns, choice of detection functions to fit and specification of count model used for inference.  These points are summarised in the box below.
+
+::: {.infobox .caution data-latex="{caution}"}
+**Programming details to adapt for your use**
+
+- Check the data organisation
+  - follows the layout of `RDistance`:
+    - data frame with detections
+    - data frame with transect-level covariates
+    - data frames eventually are merged, but create them separately
+  - check the field names of the data frames for compatibility with the `Distance` package
+- Recognise your survey design should have a large number of replicate transects
+- Detection function modelling described herein uses covariates specific to this data set
+- The GLM model is specified just once and the formula object is reused as needed
+  - Exercise of this code has only been applied to continuous univariate predictors
+  - More complex models could be fitted, but the graphical output may be compromised
+  - Figure-generating code adapts to the GLM model formula
+    - however graphic code breaks of explanatory covariate is a factor covariate
+- There is no error trapping code, specifically in the bootstrapping routine
+:::
+
+
+# Analysis of point count survey
+
+This second analysis closely mimics the previous analysis of the line transect data.  Therefore we present the code blocks with a much reduced amount of narrative.
+
+```{r loaddatapt}
+library(Rdistance)
+data("thrasherDetectionData")
+data("thrasherSiteData")
+thrasherSiteData$myCount <- tapply(thrasherDetectionData$groupsize,
+                                  thrasherDetectionData$siteID, sum)
+thrasherSiteData$myCount[is.na(thrasherSiteData$myCount)] <- 0
+library(Distance)
+```
+
+## Data organisation
+
+Note there is no `Effort` field for these point count data.
+
+```{r dataorgpt}
+newthrasher <- merge(thrasherDetectionData, thrasherSiteData, by="siteID", all=TRUE)
+names(newthrasher) <- sub("observer", "obs", names(newthrasher))
+names(newthrasher) <- sub("dist", "distance", names(newthrasher))
+```
+
+## Analysis parameters specification
+
+Specification of run-specific parameters to analyse the Sage thrasher data set.  Particularly note the logical value assigned to `pointtransect`. Candidate transect-level predictors for the detection function are **`r names(thrasherSiteData)[2:6]`**.  The same predictors, with the exception of **observer** could be used to model the thrasher counts.
+
+<style>
+div.red pre { background-color:lightcoral;   border: 3px solid;  font-weight: bold; }
+div.red pre.r { background-color:lightred; }
+</style>
+<div class="red">
+```{r mandatorypt, class.output="user-beware"}
+pointtransect <- TRUE        # survey conducted using lines or points
+dettrunc <- 170  # truncation for detection function
+myglmmodel <- as.formula(myCount ~ shrub + offset(log(effArea)))  # habitat model to fit to animal density
+nboot <- 1000      # number of bootstrap replicates
+set.seed(19205)   # random number seed
+```
+</div>
+
+## Fit detection function 
+
+We fit a series of detection function models using the transect-level covariates available in the Sage thrasher data set.
+
+```{r detfnpt}
+surveytype <- ifelse(pointtransect, "point", "line")
+woo.o <- ds(data=newthrasher, truncation=dettrunc, formula=~obs, 
+            transect=surveytype, quiet=TRUE)
+woo.shrub <- ds(data=newthrasher, truncation=dettrunc, formula=~scale(shrub), 
+           transect=surveytype, quiet=TRUE)
+woo.herb <- ds(data=newthrasher, truncation=dettrunc, formula=~scale(herb), 
+           transect=surveytype, quiet=TRUE)
+woo.height <- ds(data=newthrasher, truncation=dettrunc, formula=~scale(height), 
+           transect=surveytype, quiet=TRUE)
+woo <- ds(data=newthrasher, truncation=dettrunc, formula=~1, 
+          transect=surveytype, quiet=TRUE)
+knitr::kable(summarize_ds_models(woo, woo.o, woo.shrub, woo.herb, woo.height),
+             digits=3, 
+             caption="Halfnormal detection function model selection of covariates.",
+             row.names = FALSE)
+```
+
+None of the covariates contribute to fit of the detection function models for thrashers.  Inference should be based upon the no covariate model (that passes the goodness of fit test), but for testing purposes, we will use the model with the observer covariate.  Use of the observer covariate model will retain between-point variability in effective area; useful for testing purposes.
+
+### Plot of detection function
+
+```{r detfnplotopt, echo=TRUE, eval=TRUE}
+plot(woo.o, showpoints=FALSE, main="Sage thrasher\nDetection with observer covariate",
+     pdf=pointtransect) 
+add_df_covar_line(woo.o, data.frame(obs="obs1"), col="red", lwd=2, pdf=pointtransect) 
+add_df_covar_line(woo.o, data.frame(obs="obs2"), col="green", lwd=2, pdf=pointtransect) 
+add_df_covar_line(woo.o, data.frame(obs="obs3"), col="dark green", lwd=2, pdf=pointtransect) 
+add_df_covar_line(woo.o, data.frame(obs="obs4"), col="blue", lwd=2, pdf=pointtransect) 
+add_df_covar_line(woo.o, data.frame(obs="obs5"), col="purple", lwd=2, pdf=pointtransect)
+add_df_covar_line(woo.o, data.frame(obs="obs6"), col="coral", lwd=2, pdf=pointtransect)
+legend("topright", title="Observer", legend=1:6,
+       lwd=2, lty=2, col=c("red", "green", "dark green", "blue", "purple", "coral"))
+```
+```{r detfnplots, echo=FALSE, eval=FALSE}
+plot(woo.s, showpoints=FALSE, main="Sage thrasher\nDetection with shrubclass covariate",
+     pdf=pointtransect) 
+add_df_covar_line(woo.s, data.frame(shrubclass="Low"), col="orange", lwd=2, lty=1, pdf=pointtransect) 
+add_df_covar_line(woo.s, data.frame(shrubclass="High"), col="blue", lwd=2, lty=1, pdf=pointtransect) 
+legend("topright", title="Shrubclass", legend=c("Low", "High"),
+       lwd=2, lty=1, col=c("orange", "blue"))
+```
+
+
+## Prepare for GLM computation
+
+Considerable processing is necessary to correctly calculate the offset value for the GLM.  The offset is the effective area sampled by each transect.  Effective area $(EA)$ is computed differently, depending upon whether sampling was done with line or point transects.  
+
+- For line transects the computation uses the effective strip half-width $(ESW)$ multiplied by 2 (for each side of the transect), multiplied by the transect length.  $ESW$ is derived for each detection by acquiring the detection probability for the detection from the fitted detection function object `detfnobj$ddf$fitted`.  However a detection probability is only computed for detections at distances less than the truncation distance; so some coding is required to deal with detections beyond the truncation distance.  $ESW$ is derived from $P_a$ as $P_a \cdot w$ where $w$ is the truncation distance.
+- For point transects, effective area is computed as $\pi \cdot P_a \cdot w^2$.  This value is returned directly when the `predict()` function is used, but is derived by calculation from the fitted detection function object `detfnobj$ddf$fitted` for each detection.
+
+There is also a distinction between line and point transect computations regarding units in which data are recorded.  With Thresher Sparrows, radial detection distance was measured in meters, but we wish to measure bird density in numbers per hectare.  Division by 10000 to convert square meters to hectares.
+
+Because only need transect level information, the observation-level information can be removed, to make computation easier.  However, transects on which animals were not detected (counts=0) must also be carried forward to the GLM analysis; because 0's constitute legitimate observations.  If the offset values remained missing values (NA), the relationship between animal density and the predictor covariate(s) would not be properly estimated.
+
+```{r trimdata}
+effAreafn <- function(detfnobj, newdata, areaconv, truncation, pointflag) {
+#
+# Input: detfnobj - model object created by `ds()`
+#        newdata - data frame of detections and site-level covariates
+#        areaconv - conversion of transect length units to area units (m2 to ha for example)
+#        truncation - truncation distance for detection function fit
+#        pointflag - TRUE if point transect survey, FALSE for line transects
+#
+# Output: data frame of transects with effective area appended for each transect (to be used as offset)
+#
+  newdata$Pa <- NA
+  k <- 0
+  for (i in 1:dim(newdata)[1]) {
+    if(newdata[i, "distance"] <= truncation & !is.na(newdata[i,"distance"])) {
+      k <- k+1
+      newdata$Pa[i] <- detfnobj$ddf$fitted[k]
+    }
+  }
+  if(!pointflag) {
+    newdata$effArea <- ifelse(is.na(newdata$Pa), NA, 2 * newdata$Pa * truncation * newdata$Effort / areaconv)
+  }else{
+    newdata$effArea <- ifelse(is.na(newdata$Pa), NA, newdata$Pa * truncation^2 * pi / areaconv)
+  }
+  result <- newdata[!duplicated(newdata$siteID),]
+#    newdata must contain all covariates used in the detection function!  
+  if(!pointflag) {
+#     predict for line transects when esw=TRUE returns the ESW that needs to be converted to effective area    
+    result$effArea <- ifelse(result$myCount==0,
+                              2 * predict(detfnobj, 
+                                          newdata=data.frame(obs=result$obs, bare=result$bare,
+                                                             herb=result$herb, shrub=result$shrub,
+                                                             height=result$height),
+                                          esw = TRUE)$fitted * result$Effort / areaconv,
+                              result$effArea)
+  }else{
+#     predict for point transects when esw=TRUE returns the effective area    
+    result$effArea <- ifelse(result$myCount==0,
+                              predict(detfnobj, 
+                                          newdata=data.frame(obs=result$obs, bare=result$bare,
+                                                             herb=result$herb, shrub=result$shrub,
+                                                             height=result$height),
+                                          esw = TRUE)$fitted / areaconv,
+                              result$effArea)
+    
+  }
+  return(result)
+}
+```
+
+The function has an argument `pointflag` used to indicate whether point transect sampling was used.  If so, the correct effective area calculations are performed.
+
+
+```{r trimdatapt}
+sitesadj <- effAreafn(woo.o, newthrasher, 10000, dettrunc, pointflag = pointtransect)
+```
+
+## Estimate relationship of density and covariate
+
+As for the line transect example, fit a GLM to the observed counts, using as an offset the estimated effective area.  By default, specifying family as `poisson` assumes a `log` link function.  
+
+```{r basicglmpt}
+univarpredictor <- all.vars(myglmmodel)[2]
+glmmodel <- glm(formula=myglmmodel, family="poisson", data=sitesadj)
+modelsum <- summary(glmmodel)
+tablecaption <- paste("GLM coefficients from counts as function of", 
+                      univarpredictor, "with log(effective area) offset.")
+knitr::kable(modelsum$coef, digits=4, caption=tablecaption)
+```
+
+## Visualise
+
+Even though we have computed the effective area for each transect based upon the fitted detection function, we have not used that effective area to adjust the observed counts.  The simple formula
+
+$$\hat{D}_i = \frac{n_i}{EA_i}, i = 1, \ldots , n_{transects}$$
+where $EA_i$ is the effective area for the $i^{th}$ transect, describes this adjustment.
+
+<!-- We plot the estimated density against the continuous univariate predictor. -->
+
+```{r estDensitypt, echo=FALSE, fig.show='hide', eval=TRUE}
+sitesadj$density <- sitesadj$myCount / sitesadj$effArea 
+# plot(sitesadj[, univarpredictor], sitesadj$density, pch=20,
+#     xlab=univarpredictor, ylab="Density of threshers per ha")
+# firstplot <- recordPlot()
+```
+
+<!-- The basic background plot onto which our bootstrap replicates will be superimposed. -->
+
+```{r glmplotbpt, layout="l-body-outset",  message=FALSE, echo=FALSE, eval=FALSE}
+replayPlot(firstplot)
+predData <- data.frame(predictor=seq(min(thrasherSiteData[ , univarpredictor]),
+                                 max(thrasherSiteData[, univarpredictor]), length.out=50)) 
+lines(predData$predictor, exp(coef(glmmodel)[1] + (coef(glmmodel)[2]*predData$predictor)), lwd=2)
+text(predData$predictor[1], max(sitesadj$density,na.rm=TRUE)*0.98, pos=4,
+     "GLM coefficients (exponentiated)") 
+text(predData$predictor[1], max(sitesadj$density,na.rm=TRUE)*0.88, pos=4,
+     bquote(hat(beta[0]) == .(round(exp(coef(glmmodel)[1]), 3)))) 
+text(predData$predictor[1], max(sitesadj$density,na.rm=TRUE)*0.78, pos=4, 
+     bquote(hat(beta[1]) == .(round(exp(coef(glmmodel)[2]), 3))))
+secondplot <- recordPlot()
+```
+
+## Incorporate uncertainty
+
+We resample our transects with replacement to assess the uncertainty in our point estimates of the relationship between the habitat covariate and the response variable. Specify the number of bootstrap resamples required and allocate storage for the replicate estimates of the GLM parameters: intercept and slope.
+
+```{r bootsetuppt}
+intercept.est <- vector("numeric", length=nboot)
+slope.est <- vector("numeric", length=nboot)
+```
+
+Specify the original site data frame `thrasherSiteData` in the following code.  The code will harvest the estimated slope and intercept coefficients from each replicate.  It is uncertainty in the slope coefficient ($\widehat{\beta_1}$) that determines our inference about the effect of shrub cover upon Sage thrasher density.  The uncertainty in the slope coefficient as calculated by the code below differs from the uncertainty reported in Table \@ref(tab:basicglmpt) because below we are incorporating uncertainty in the relationship induced by uncertainty in the detection function, which is not recognised in Table  \@ref(tab:basicglmpt).
+
+```{r bootstrappt}
+for (theboot in 1:nboot) {
+  newdetects <- data.frame() 
+  bob <- sample(thrasherSiteData$siteID, replace=TRUE, size=length(unique(thrasherSiteData$siteID)))
+  for (bootsite in 1:length(bob)) { 
+    thissite <- bob[bootsite] 
+    glob <- newthrasher[newthrasher$siteID==thissite, ]
+    glob$siteID <- sprintf("rep%02d", bootsite)
+    newdetects <- rbind(newdetects, glob)  
+    }
+  newdetects <- newdetects[order(newdetects$siteID), ]
+# Refit the detection function model, using observer as a covariate, to the bootstrap replicate
+  detfnmod <- ds(data=newdetects, truncation=dettrunc, formula=~obs, transect=surveytype, quiet=TRUE)
+#  Compute effective area offset for each transect
+  bootsitesadj <- effAreafn(detfnmod, newdetects, 10000, dettrunc, pointflag = pointtransect)
+#   refit the GLM for this bootstrap replicate
+  glmresult <- glm(formula= myglmmodel, family="poisson", data=bootsitesadj)
+  intercept.est[theboot] <- coef(glmresult)[1]
+  slope.est[theboot] <- coef(glmresult)[2] 
+}
+```
+
+Code below creates a comprehensive figure of the findings.  Steps include
+
+- generates the predicted relationship of the habitat and bird density for each bootstrap replicate,
+- computes point-wise confidence intervals, 
+- plot the estimated relationship, all bootstrap replicate relationships and the confidence intervals,
+- insets sampling distribution of ($\widehat{\beta_1}$) and places a confidence interval on the point estimate of ($\widehat{\beta_1}$).
+
+```{r grandplot, layout="l-body-outset", fig.cap="Relationship between univariate predictor and Sage Thrasher density as modelled by GLM.  Offset is estimated covered area. Confidence intervals incorporate uncertainty from imperfect detectability. Inset is sampling distribution of the parameter of interest for Sage Thrasher.", fig.height=5.5}
+predData <- data.frame(predictor=seq(min(thrasherSiteData[ , univarpredictor]),
+                                 max(thrasherSiteData[, univarpredictor]), length.out=50)) 
+orig.fit <- data.frame(x=predData$predictor, 
+                       y=exp(coef(glmmodel)[1] + (coef(glmmodel)[2]*predData$predictor)))
+# long form data frame of all replicate predicted values
+longform <- NULL
+for (i in 1:nboot) {
+  mypredict <- exp(intercept.est[i] + (slope.est[i]*predData$predictor))
+  longform <- c(longform, mypredict)
+}
+big.df <- data.frame(predict=longform)
+big.df$shrub <- predData$predictor
+big.df$group <- rep(1:nboot, each=length(predData$predictor))
+alpha <- 0.05
+# point-wise confidence intervals
+quants <- big.df %>% 
+  group_by(shrub) %>% 
+  summarise(lower = quantile(predict, alpha/2),
+            upper = quantile(predict, 1-alpha/2)) %>% 
+  tidyr::gather(stat, value, -shrub)
+# main plot
+b0label <- bquote(~widehat(beta[0]) == .(round(coef(glmmodel)[1],4)))
+b1label <- bquote(~widehat(beta[1]) == .(round(coef(glmmodel)[2],4)))
+fig1 <- ggplot(dat=sitesadj, aes(shrub, density)) +
+  geom_point() +
+  geom_line(aes(y=predict, group=group), big.df, alpha=0.1) + 
+  geom_line(aes(y=y, x=x), orig.fit, colour="red", size=2) +
+  geom_line(aes(y=value, group=stat), quants, col='blue', size=1) +
+  annotate(geom="text", x=24, y=1.5, label= b0label, size=5) +
+  annotate(geom="text", x=24, y=1.4, label= b1label, size=5) +
+  labs(x="Percent shrub cover", y="Estimate bird density (per ha)",
+       title="Sage thrasher density as function of shrub cover") +
+  theme_bw()
+# inset histogram for sampling distribution
+bounds <- quantile(slope.est, probs = c(alpha/2, 1-alpha/2))
+fig2 <- ggplot() + aes(x=slope.est) + geom_histogram() +
+  geom_vline(xintercept=bounds, size=1) +
+  labs(x="Estimate of slope", y="Frequency") +
+  annotate(geom="text", x=-.01, y=11, label=round(bounds[1],3)) +
+  annotate(geom="text", x=.18, y=11, label=round(bounds[2],3)) 
+complete <- fig1 + inset_element(fig2, right=.5, bottom=.4, left=.01, top=.99)
+complete
+```
+
+```{r plotresultpt, layout="l-body-outset", fig.cap="Relationship between univariate predictor and Sage Thrasher density as modelled by GLM.  Offset is estimated covered area. Confidence intervals incorporate uncertainty from imperfect detectability.", echo=FALSE, eval=FALSE}
+replayPlot(secondplot)
+for (i in 1:nboot) lines(predData$predictor, exp(intercept.est[i] + (slope.est[i]*predData$predictor)),
+                         col=rgb(1,0,0, alpha=0.1), lwd=0.5)
+bootLow <- vector("numeric", length=dim(predData)[1]) 
+bootUpp <- vector("numeric", length=dim(predData)[1])
+for (i in 1:dim(predData)[1]) { 
+  y <- vector("numeric", length=nboot) 
+  for (j in 1:nboot) { 
+    y[j] <- exp(intercept.est[j] + (slope.est[j]*predData$predictor[i])) 
+    } 
+  bootLow[i] <- quantile(y, 0.025, na.rm=TRUE) 
+  bootUpp[i] <- quantile(y, 0.975, na.rm=TRUE)
+}
+lines(predData$predictor, bootLow, lwd=2, lty=2) 
+lines(predData$predictor, bootUpp, lwd=2, lty=2)
+```
+
+## Inference regarding the habitat covariate
+
+To assess the effect of the transect-level environmental covariate upon bird density, we focus our attention on $\hat{\beta_1}$.  The greater in magnitude the slope of the covariate, the greater the effect of the covariate upon animal density.  If the estimated slope ($\hat{\beta_1}$) is indistinguishable from zero, we infer the habitat covariate has no influence upon animal density. In the case of the Sage Thrasher, the species appears to exhibit little response to the presence of shrub cover during this study.  Note that the range of shrub cover is not extensive (~16% to ~26%).  We can make no inference regarding the density:habitat relationship outside this range in shrub cover.
+
+```{r slopept, fig.cap="Sampling distribution of the parameter of interest for Sage Thrasher.", echo=FALSE, eval=FALSE}
+xlabel <- paste("Estimated slope of", univarpredictor, "and count relationship.")
+hist.slope <- hist(slope.est, main="Sampling distribution of slope parameter",
+                   xlab=xlabel) 
+cibounds <- quantile(slope.est, probs = c(.025,.975), na.rm=TRUE)
+abline(v=cibounds, lty=3) 
+text(cibounds, max(hist.slope$counts), round(cibounds,3))
+```
+
+# Summary
+
+Inference regarding the relationship between animal density and habitat covariates is invariably made more difficult when detectability of animals is imperfect.  Adjusting number of animals detected for this estimated probability of detection introduces uncertainty into investigation of the relationship.  If this added uncertainty is disregarded, faulty inference (believing a relationship exists where there is none) can result.
+
+In reality, it is more challenging to propagate the uncertainty via the bootstrap, than to calculate the point estimate of the relationship.  Nevertheless, sound inference is achieved by adequately incorporating uncertainty in all accountable forms in our analysis.
+
+This document contains code to perform this *count model analysis* for either line or point transects. What remains  is to generalise this framework further, e.g. multiple predictor variables or more complex survey designs.
+
+# Acknowledgements
+
+The heart of the analysis presented was based upon code and ideas presented by Jason Carlisle and Trent McDonald in their [`RDistance wiki`](https://github.com/tmcd82070/Rdistance/wiki/Modeling-abundance-in-relation-to-covariates).
