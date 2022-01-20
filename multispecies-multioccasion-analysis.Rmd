@@ -47,7 +47,7 @@ birds <- read.csv("https://synergy.st-andrews.ac.uk/ds-manda/files/2016/11/montr
 
 # Survey design
 
-Buckland's design consisted of visiting each of the 19 transects in his study twice. To examine some of the errors that can arise from improper analysis, I choose to treat the two visits as `strata` for the express purpose of generating stratum (visit) -specific density estimates. Density estimates reported in @buckland2006 are in units of birds $\cdot km^{-2}$.
+Buckland's design consisted of visiting each of the 19 transects in his study twice. To examine some of the errors that can arise from improper analysis, I choose to treat the two visits as `strata` for the express purpose of generating stratum (visit) -specific density estimates. Density estimates reported in @buckland2006 are in units of birds $\cdot hectare^{-1}$.
 
 ```{r organise}
 birds$Region.Label <- birds$visit
