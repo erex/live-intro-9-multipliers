@@ -10,7 +10,7 @@ conversion.factor <- convert_units("centimeter", "kilometer", "square kilometer"
 
 
 ## ---- echo=T, eval=T, fig.height=4--------------------------------------------
-deer.df <- ds(sikadeer, key="hn", truncation="10%", convert.units = conversion.factor)
+deer.df <- ds(sikadeer, key="hn", truncation="10%", convert_units = conversion.factor)
 plot(deer.df)
 print(deer.df$dht$individuals$summary)
 

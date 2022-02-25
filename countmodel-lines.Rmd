@@ -57,7 +57,7 @@ Investigators often wish to make inferences from their surveys beyond simply rep
 Answers to such questions are sought through use of generalised linear modelling (of which analysis of variance and regression are subsets). However, simple modelling of counts fails to take into account imperfect detectability. When detectability is imperfect, the response variable possesses uncertainty derived from uncertainty in the probability of detection.
 
 A number of authors have recognised the need to incorporate this uncertainty into the analysis of habitat effects upon estimated density. One approach (employed here) conducts the analyses in two stages: first detectability is estimated and $P_a$ or $\mu$ or $\rho$ is estimated. A second stage fits a model to count data adjusting using the estimated detectability parameters. This approach is exemplified by @Buckland2009a. Alternatively, single state approaches have been
-described by @Oedekoven2013 and @Oedekoven2014.
+described by @rodriguezTortoiseAbundances2017.
 
 Propagation of uncertainty from the first step into the second step is accomplished via a bootstrap, with the effective area sampled serving as an offset in the generalised linear modelling (GLM) analysis.  The method described herein only applies when the link function is the `log` link, for the following reason.
 
@@ -147,8 +147,8 @@ div.red pre.r { background-color:lightred; }
 pointtransect <- FALSE        # survey conducted using lines or points
 dettrunc <- 100  # truncation for detection function
 myglmmodel <- as.formula(myCount ~ shrub + offset(log(effArea)))  # habitat model to fit to animal density
-nboot <- 500       # number of bootstrap replicates
-set.seed(1919191)   # random number seed
+nboot <- 1000       # number of bootstrap replicates
+set.seed(19191)   # random number seed
 ```
 </div>
 

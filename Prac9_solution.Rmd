@@ -1,7 +1,7 @@
 ---
 title: Exercise 9<br> Analysis with multipliers
 author: Centre for Research into Ecological and Environmental Modelling <br> **University of St Andrews**
-date: Introduction to distance sampling<br> January 2022
+date: Introduction to distance sampling<br> April 2022
 output: 
   rmdformats::readthedown:
     highlight: tango
@@ -31,7 +31,7 @@ conversion.factor <- convert_units("centimeter", "kilometer", "square kilometer"
 Here we did not perform a comprehensive examination of fitting a detection function to the detected pellet groups, however, as a general guideline, we truncated the longest 10% perpendicular distances.
 
 ```{r, echo=T, eval=T, fig.height=4}
-deer.df <- ds(sikadeer, key="hn", truncation="10%", convert.units = conversion.factor)
+deer.df <- ds(sikadeer, key="hn", truncation="10%", convert_units = conversion.factor)
 plot(deer.df)
 print(deer.df$dht$individuals$summary)
 ```

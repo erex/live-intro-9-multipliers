@@ -1,7 +1,7 @@
 ---
 title: "Perils of multispecies and multisession distance sampling analysis"
 description: |
-  Example using Montrave data employing `region.table` and `sample.table` construct
+  Example using Montrave data employing `region_table` and `sample_table` construct
 author:
   - name: Eric Rexstad
     url: http://distancesampling.org
@@ -80,7 +80,7 @@ But wait, the situation is even **worse** than the above table suggests.  Transe
 Let's see what the `ds()` function thinks about the survey effort using information from the species-specific data frame.
 
 ```{r incorrect-result}
-chaf.wrong <- ds(chaf, key="hn", convert.units = cu, truncation=95, formula = ~Region.Label)
+chaf.wrong <- ds(chaf, key="hn", convert_units = cu, truncation=95, formula = ~Region.Label)
 knitr::kable(chaf.wrong$dht$individuals$summary) %>%
   kable_paper(full_width=FALSE) %>%
   column_spec(6, background="salmon") %>%
@@ -96,11 +96,11 @@ Note also the number of detections per kilometer; roughly 9 on the first visit a
 Additional arguments can be passed to `ds()` to resolve this problem.  Consulting the `ds()` documentation
 
 ::: {.blackbox}
-- region.table	data.frame with two columns:
+- region_table	data.frame with two columns:
   - Region.Label label for the region
   - Area area of the region
-  - region.table has one row for each stratum. If there is no stratification then region.table has one entry with Area corresponding to the total survey area. If Area is omitted density estimates only are produced.
-- sample.table	data.frame mapping the regions to the samples (i.e. transects). There are three columns:
+  - region_table has one row for each stratum. If there is no stratification then region_table has one entry with Area corresponding to the total survey area. If Area is omitted density estimates only are produced.
+- sample_table	data.frame mapping the regions to the samples (i.e. transects). There are three columns:
   - Sample.Label label for the sample
   - Region.Label label for the region that the sample belongs to.
   - Effort the effort expended in that sample (e.g. transect length).
@@ -122,14 +122,14 @@ birds.sampletable <- data.frame(Region.Label=as.factor(rep(c(1,2), each=19)),
 
 # Simple detection function model
 
-The chaffinch analysis is performed again, this time supplying the `region.table` and `sample.table` information to `ds()`.  The correct number of transects (19) sampled on both visits (even though chaffinch was not detected on 4 transects on visit 1 and 2 transects on visit 2) is now recognised.  Hence, the use of `region table` and `sample table` **solves the problem** of effort miscalculation if a species is not detected on all transects.
+The chaffinch analysis is performed again, this time supplying the `region_table` and `sample_table` information to `ds()`.  The correct number of transects (19) sampled on both visits (even though chaffinch was not detected on 4 transects on visit 1 and 2 transects on visit 2) is now recognised.  Hence, the use of `region table` and `sample table` **solves the problem** of effort miscalculation if a species is not detected on all transects.
 
 ```{r truncate}
 tr <- 95   # as per Buckland (2006)
 onlycf <- ds(data=birds[birds$species=="c", ], 
-             region.table = birds.regiontable,
-             sample.table = birds.sampletable,
-             trunc=tr, convert.units=cu, key="hn", formula = ~Region.Label)
+             region_table = birds.regiontable,
+             sample_table = birds.sampletable,
+             trunc=tr, convert_units=cu, key="hn", formula = ~Region.Label)
 knitr::kable(onlycf$dht$individuals$summary) %>%
   kable_paper(full_width=FALSE) %>%
   column_spec(6, background="salmon") %>%
