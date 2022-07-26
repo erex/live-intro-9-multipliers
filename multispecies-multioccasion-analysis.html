@@ -50,16 +50,17 @@ pre.numberSource code > span > a:first-child::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {   }
+  { color: #00769e; background-color: #f1f3f5; }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
+code span { color: #00769e; } /* Normal */
 code span.al { color: #ad0000; } /* Alert */
 code span.an { color: #5e5e5e; } /* Annotation */
-code span.at { } /* Attribute */
+code span.at { color: #657422; } /* Attribute */
 code span.bn { color: #ad0000; } /* BaseN */
 code span.bu { } /* BuiltIn */
-code span.cf { color: #007ba5; } /* ControlFlow */
+code span.cf { color: #00769e; } /* ControlFlow */
 code span.ch { color: #20794d; } /* Char */
 code span.cn { color: #8f5902; } /* Constant */
 code span.co { color: #5e5e5e; } /* Comment */
@@ -73,9 +74,9 @@ code span.fl { color: #ad0000; } /* Float */
 code span.fu { color: #4758ab; } /* Function */
 code span.im { } /* Import */
 code span.in { color: #5e5e5e; } /* Information */
-code span.kw { color: #007ba5; } /* Keyword */
+code span.kw { color: #00769e; } /* Keyword */
 code span.op { color: #5e5e5e; } /* Operator */
-code span.ot { color: #007ba5; } /* Other */
+code span.ot { color: #00769e; } /* Other */
 code span.pp { color: #ad0000; } /* Preprocessor */
 code span.sc { color: #5e5e5e; } /* SpecialChar */
 code span.ss { color: #20794d; } /* SpecialString */
@@ -114,8 +115,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
 
   <!--  https://schema.org/Article -->
-  <meta property="article:published" itemprop="datePublished" content="2022-02-20" />
-  <meta property="article:created" itemprop="dateCreated" content="2022-02-20" />
+  <meta property="article:published" itemprop="datePublished" content="2022-07-26" />
+  <meta property="article:created" itemprop="dateCreated" content="2022-07-26" />
   <meta name="article:author" content="Eric Rexstad" />
 
   <!--  https://developers.facebook.com/docs/sharing/webmasters#markup -->
@@ -135,7 +136,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
   <!--radix_placeholder_rmarkdown_metadata-->
 
   <script type="text/json" id="radix-rmarkdown-metadata">
-  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","bibliography","csl"]}},"value":[{"type":"character","attributes":{},"value":["Perils of multispecies and multisession distance sampling analysis"]},{"type":"character","attributes":{},"value":["Example using Montrave data employing `region_table` and `sample_table` construct\n"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Eric Rexstad"]},{"type":"character","attributes":{},"value":["http://distancesampling.org"]},{"type":"character","attributes":{},"value":["CREEM, Univ of St Andrews"]},{"type":"character","attributes":{},"value":["https://creem.st-andrews.ac.uk"]}]}]},{"type":"character","attributes":{},"value":["2022-02-20"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["multi.bib"]},{"type":"character","attributes":{},"value":["apa.csl"]}]}
+  {"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["title","description","author","date","output","bibliography","csl"]}},"value":[{"type":"character","attributes":{},"value":["Perils of multispecies and multisession distance sampling analysis"]},{"type":"character","attributes":{},"value":["Example using Montrave data employing `region_table` and `sample_table` construct\n"]},{"type":"list","attributes":{},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["name","url","affiliation","affiliation_url"]}},"value":[{"type":"character","attributes":{},"value":["Eric Rexstad"]},{"type":"character","attributes":{},"value":["http://distancesampling.org"]},{"type":"character","attributes":{},"value":["CREEM, Univ of St Andrews"]},{"type":"character","attributes":{},"value":["https://creem.st-andrews.ac.uk"]}]}]},{"type":"character","attributes":{},"value":["2022-07-26"]},{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["distill::distill_article"]}},"value":[{"type":"list","attributes":{"names":{"type":"character","attributes":{},"value":["toc"]}},"value":[{"type":"logical","attributes":{},"value":[true]}]}]},{"type":"character","attributes":{},"value":["multi.bib"]},{"type":"character","attributes":{},"value":["apa.csl"]}]}
   </script>
   <!--/radix_placeholder_rmarkdown_metadata-->
   
@@ -452,10 +453,6 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     position: relative;
     margin-bottom: 2.5em;
     margin-top: 1.5em;
-  }
-
-  .figure img {
-    width: 100%;
   }
 
   .figure .caption {
@@ -1287,6 +1284,12 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
 
       // hoverable references
       $('span.citation[data-cites]').each(function() {
+        if ($(this).children()[0].nodeName == "D-FOOTNOTE") {
+          var fn = $(this).children()[0]
+          $(this).html(fn.shadowRoot.querySelector("sup"))
+          $(this).id = fn.id
+          fn.remove()
+        }
         var refs = $(this).attr('data-cites').split(" ");
         var refHtml = refs.map(function(ref) {
           return "<p>" + $('#ref-' + ref).html() + "</p>";
@@ -1301,6 +1304,31 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
           placement: 'bottom-start'
         });
       });
+
+      // fix footnotes in tables (#411)
+      // replacing broken distill.pub feature
+      $('table d-footnote').each(function() {
+        // we replace internal showAtNode methode which is triggered when hovering a footnote
+        this.hoverBox.showAtNode = function(node) {
+          // ported from https://github.com/distillpub/template/pull/105/files
+          calcOffset = function(elem) {
+              let x = elem.offsetLeft;
+              let y = elem.offsetTop;
+              // Traverse upwards until an `absolute` element is found or `elem`
+              // becomes null.
+              while (elem = elem.offsetParent && elem.style.position != 'absolute') {
+                  x += elem.offsetLeft;
+                  y += elem.offsetTop;
+              }
+
+              return { left: x, top: y };
+          }
+          // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetTop
+          const bbox = node.getBoundingClientRect();
+          const offset = calcOffset(node);
+          this.show([offset.left + bbox.width, offset.top + bbox.height]);
+        }
+      })
 
       // clear polling timer
       clearInterval(tid);
@@ -1400,6 +1428,8 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // mark non-body figures created by knitr chunks as 100% width
     $('.layout-chunk').each(function(i, val) {
       var figures = $(this).find('img, .html-widget');
+      // ignore leaflet img layers (#106)
+      figures = figures.filter(':not(img[class*="leaflet"])')
       if ($(this).attr('data-layout') !== "l-body") {
         figures.css('width', '100%');
       } else {
@@ -1422,7 +1452,7 @@ code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
     // get rid of index.html references in header
     if (window.location.protocol !== "file:") {
       $('.distill-site-header a[href]').each(function(i,val) {
-        $(this).attr('href', $(this).attr('href').replace("index.html", "./"));
+        $(this).attr('href', $(this).attr('href').replace(/^index[.]html/, "./"));
       });
     }
 
@@ -2721,7 +2751,7 @@ distill-header .nav a {
 <!--radix_placeholder_front_matter-->
 
 <script id="distill-front-matter" type="text/json">
-{"title":"Perils of multispecies and multisession distance sampling analysis","description":"Example using Montrave data employing `region_table` and `sample_table` construct","authors":[{"author":"Eric Rexstad","authorURL":"http://distancesampling.org","affiliation":"CREEM, Univ of St Andrews","affiliationURL":"https://creem.st-andrews.ac.uk","orcidID":""}],"publishedDate":"2022-02-20T00:00:00.000+00:00","citationText":"Rexstad, 2022"}
+{"title":"Perils of multispecies and multisession distance sampling analysis","description":"Example using Montrave data employing `region_table` and `sample_table` construct","authors":[{"author":"Eric Rexstad","authorURL":"http://distancesampling.org","affiliation":"CREEM, Univ of St Andrews","affiliationURL":"https://creem.st-andrews.ac.uk","orcidID":""}],"publishedDate":"2022-07-26T00:00:00.000+01:00","citationText":"Rexstad, 2022"}
 </script>
 
 <!--/radix_placeholder_front_matter-->
@@ -2742,7 +2772,7 @@ and <code>sample_table</code> construct</p></p>
   Eric Rexstad <a href="http://distancesampling.org" class="uri">http://distancesampling.org</a> (CREEM, Univ of St
 Andrews)<a href="https://creem.st-andrews.ac.uk" class="uri">https://creem.st-andrews.ac.uk</a>
   
-<br />2022-02-20
+<br />2022-07-26
 </div>
 
 <div class="d-article">
@@ -2750,17 +2780,18 @@ Andrews)<a href="https://creem.st-andrews.ac.uk" class="uri">https://creem.st-an
 <nav class="l-text toc figcaption" id="TOC">
 <h3>Contents</h3>
 <ul>
-<li><a href="#a-multispecies-data-set-with-multiple-visits">A
-multispecies data set with multiple visits</a></li>
-<li><a href="#survey-design">Survey design</a></li>
-<li><a href="#analysis-of-only-one-species-incorrectly">Analysis of only
-one species (incorrectly)</a></li>
-<li><a href="#use-explicit-data-hierarchy">Use explicit data
+<li><a href="#a-multispecies-data-set-with-multiple-visits" id="toc-a-multispecies-data-set-with-multiple-visits">A multispecies
+data set with multiple visits</a></li>
+<li><a href="#survey-design" id="toc-survey-design">Survey
+design</a></li>
+<li><a href="#analysis-of-only-one-species-incorrectly" id="toc-analysis-of-only-one-species-incorrectly">Analysis of only one
+species (incorrectly)</a></li>
+<li><a href="#use-explicit-data-hierarchy" id="toc-use-explicit-data-hierarchy">Use explicit data
 hierarchy</a></li>
-<li><a href="#simple-detection-function-model">Simple detection function
+<li><a href="#simple-detection-function-model" id="toc-simple-detection-function-model">Simple detection function
 model</a></li>
-<li><a href="#consequence-of-incorrect-analysis">Consequence of
-incorrect analysis</a></li>
+<li><a href="#consequence-of-incorrect-analysis" id="toc-consequence-of-incorrect-analysis">Consequence of incorrect
+analysis</a></li>
 </ul>
 </nav>
 </div>
@@ -2791,11 +2822,14 @@ survey (and data file) recorded detections of four species of songbirds.
 We conduct an analysis of chaffinch <em>(Fringilla coelebs)</em> (coded
 <code>c</code> in the data file), but similar results would arise with
 the other species.</p>
-<p>Begin by reading the flat file in a comma delimited format:</p>
+<p>Begin by reading the flat file in a comma delimited format. Note the
+URL for the data file is very long, double check that you can read the
+URL including the Github token.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">birds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span><span class="st">&quot;https://synergy.st-andrews.ac.uk/ds-manda/files/2016/11/montrave-line.csv&quot;</span><span class="op">)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">URLpart1</span> <span class="op">&lt;-</span> <span class="st">&quot;https://raw.githubusercontent.com/distanceexamples/Distance-multispecies/main/montrave-line.csv&quot;</span></span>
+<span><span class="va">URLpart2</span> <span class="op">&lt;-</span> <span class="st">&quot;?token=GHSAT0AAAAAABP6QDHAQ677QTIJEKSK2WYEYWG4EYA&quot;</span></span>
+<span><span class="va">birds</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html">read.csv</a></span><span class="op">(</span>file<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span><span class="op">(</span><span class="va">URLpart1</span>, <span class="va">URLpart2</span><span class="op">)</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 <h1 id="survey-design">Survey design</h1>
@@ -2808,9 +2842,8 @@ units of birds <span class="math inline">\(\cdot
 hectare^{-1}\)</span>.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">birds</span><span class="op">$</span><span class="va">Region.Label</span> <span class="op">&lt;-</span> <span class="va">birds</span><span class="op">$</span><span class="va">visit</span>
-<span class="va">cu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Distance/man/convert_units.html">convert_units</a></span><span class="op">(</span><span class="st">&quot;meter&quot;</span>, <span class="st">&quot;kilometer&quot;</span>, <span class="st">&quot;hectare&quot;</span><span class="op">)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">birds</span><span class="op">$</span><span class="va">Region.Label</span> <span class="op">&lt;-</span> <span class="va">birds</span><span class="op">$</span><span class="va">visit</span></span>
+<span><span class="va">cu</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Distance/man/convert_units.html">convert_units</a></span><span class="op">(</span><span class="st">&quot;meter&quot;</span>, <span class="st">&quot;kilometer&quot;</span>, <span class="st">&quot;hectare&quot;</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 <h1 id="analysis-of-only-one-species-incorrectly">Analysis of only one
@@ -2820,8 +2853,7 @@ would be to subset the original data frame and use the species-specific
 data frame for analysis. Begin by performing the subset operation.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">chaf</span> <span class="op">&lt;-</span> <span class="va">birds</span><span class="op">[</span><span class="va">birds</span><span class="op">$</span><span class="va">species</span><span class="op">==</span><span class="st">&quot;c&quot;</span>, <span class="op">]</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">chaf</span> <span class="op">&lt;-</span> <span class="va">birds</span><span class="op">[</span><span class="va">birds</span><span class="op">$</span><span class="va">species</span><span class="op">==</span><span class="st">&quot;c&quot;</span>, <span class="op">]</span></span></code></pre>
 </div>
 </div>
 <p>When the data are subset, the integrity of the survey design is not
@@ -2829,17 +2861,18 @@ preserved. A simple frequency table of the species-specific data frame
 flags up a number of transect/visit combinations where no chaffinches
 were detected. The result is that the subset data frame suggests 3 of
 the 19 transects lacked chaffinch detections on the first visit and one
-of the 19 transects lacked chaffinch detections on the second visit.</p>
+of the 19 transects lacked chaffinch detections on the second visit.
+This revelation, in itself, causes no problems for our estimate of
+density of chaffinches.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">detects</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">chaf</span><span class="op">$</span><span class="va">Sample.Label</span>, <span class="va">chaf</span><span class="op">$</span><span class="va">visit</span><span class="op">)</span>
-<span class="va">detects</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">detects</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">detects</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;Transect&quot;</span>, <span class="st">&quot;Visit&quot;</span>, <span class="st">&quot;Detections&quot;</span><span class="op">)</span>
-<span class="va">detects</span><span class="op">$</span><span class="va">Detections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/cell_spec.html">cell_spec</a></span><span class="op">(</span><span class="va">detects</span><span class="op">$</span><span class="va">Detections</span>, 
-                          background <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">detects</span><span class="op">$</span><span class="va">Detections</span><span class="op">==</span><span class="fl">0</span>, <span class="st">&quot;red&quot;</span>, <span class="st">&quot;white&quot;</span><span class="op">)</span><span class="op">)</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">detects</span>, escape<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_paper</a></span><span class="op">(</span>full_width<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">detects</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html">table</a></span><span class="op">(</span><span class="va">chaf</span><span class="op">$</span><span class="va">Sample.Label</span>, <span class="va">chaf</span><span class="op">$</span><span class="va">visit</span><span class="op">)</span></span>
+<span><span class="va">detects</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span><span class="op">(</span><span class="va">detects</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html">names</a></span><span class="op">(</span><span class="va">detects</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">&quot;Transect&quot;</span>, <span class="st">&quot;Visit&quot;</span>, <span class="st">&quot;Detections&quot;</span><span class="op">)</span></span>
+<span><span class="va">detects</span><span class="op">$</span><span class="va">Detections</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/cell_spec.html">cell_spec</a></span><span class="op">(</span><span class="va">detects</span><span class="op">$</span><span class="va">Detections</span>, </span>
+<span>                          background <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">detects</span><span class="op">$</span><span class="va">Detections</span><span class="op">==</span><span class="fl">0</span>, <span class="st">&quot;red&quot;</span>, <span class="st">&quot;white&quot;</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">detects</span>, escape<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_paper</a></span><span class="op">(</span>full_width<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span></span></code></pre>
 </div>
 <table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
@@ -3255,21 +3288,22 @@ Detections
 </tbody>
 </table>
 </div>
-<p>But wait, the situation is even <strong>worse</strong> than the above
-table suggests. Transect 12 does not appear in the table above because
-there were no detections on <em>either</em> visit. Consequently, there
-were 4 transects without chaffinches on the first visit and 2 transects
-without chaffinches on the second visit.</p>
+<p>However, there is a problem hidden within the table above. Transect
+12 does not appear in the table because there were no detections of
+chaffinches on <em>either</em> visit. Consequently, there were 4
+transects without chaffinches on the first visit and 2 transects without
+chaffinches on the second visit, rather than the 3 transects and 1
+transect you might mistakenly conclude do not have chaffinch detections
+if you relied completely upon the table.</p>
 <p>Let’s see what the <code>ds()</code> function thinks about the survey
 effort using information from the species-specific data frame.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">chaf.wrong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Distance/man/ds.html">ds</a></span><span class="op">(</span><span class="va">chaf</span>, key<span class="op">=</span><span class="st">&quot;hn&quot;</span>, convert_units <span class="op">=</span> <span class="va">cu</span>, truncation<span class="op">=</span><span class="fl">95</span>, formula <span class="op">=</span> <span class="op">~</span><span class="va">Region.Label</span><span class="op">)</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">chaf.wrong</span><span class="op">$</span><span class="va">dht</span><span class="op">$</span><span class="va">individuals</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_paper</a></span><span class="op">(</span>full_width<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">6</span>, background<span class="op">=</span><span class="st">&quot;salmon&quot;</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">7</span>, background<span class="op">=</span><span class="st">&quot;steelblue&quot;</span><span class="op">)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">chaf.wrong</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Distance/man/ds.html">ds</a></span><span class="op">(</span><span class="va">chaf</span>, key<span class="op">=</span><span class="st">&quot;hn&quot;</span>, convert_units <span class="op">=</span> <span class="va">cu</span>, truncation<span class="op">=</span><span class="fl">95</span>, formula <span class="op">=</span> <span class="op">~</span><span class="va">Region.Label</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">chaf.wrong</span><span class="op">$</span><span class="va">dht</span><span class="op">$</span><span class="va">individuals</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_paper</a></span><span class="op">(</span>full_width<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">6</span>, background<span class="op">=</span><span class="st">&quot;salmon&quot;</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">7</span>, background<span class="op">=</span><span class="st">&quot;steelblue&quot;</span><span class="op">)</span></span></code></pre>
 </div>
 <table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>
@@ -3402,7 +3436,7 @@ surveyed on the second visit.</p>
 <p>Note also the number of detections per kilometer; roughly 9 on the
 first visit and 7.7 on the second visit. These encounter rates exclude
 kilometers of effort on transects where there were no detections. We
-will return to this comparison later</p>
+will return to this comparison later.</p>
 <h1 id="use-explicit-data-hierarchy">Use explicit data hierarchy</h1>
 <p>Additional arguments can be passed to <code>ds()</code> to resolve
 this problem. Consulting the <code>ds()</code> documentation</p>
@@ -3436,14 +3470,13 @@ showing the two strata with equal areas and each labelled transect (of
 given length) is repeated two times.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">birds.regiontable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>Region.Label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>, Area<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">33.2</span>,<span class="fl">33.2</span><span class="op">)</span><span class="op">)</span>
-<span class="va">birds.sampletable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>Region.Label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">19</span><span class="op">)</span><span class="op">)</span>,
-                                Sample.Label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span>, times<span class="op">=</span><span class="fl">2</span><span class="op">)</span>,
-                                Effort<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.208</span>, <span class="fl">0.401</span>, <span class="fl">0.401</span>, <span class="fl">0.299</span>, <span class="fl">0.350</span>,
-                                         <span class="fl">0.401</span>, <span class="fl">0.393</span>, <span class="fl">0.405</span>, <span class="fl">0.385</span>, <span class="fl">0.204</span>,
-                                         <span class="fl">0.039</span>, <span class="fl">0.047</span>, <span class="fl">0.204</span>, <span class="fl">0.271</span>, <span class="fl">0.236</span>,
-                                         <span class="fl">0.189</span>, <span class="fl">0.177</span>, <span class="fl">0.200</span>, <span class="fl">0.020</span><span class="op">)</span><span class="op">)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">birds.regiontable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>Region.Label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span><span class="op">)</span>, Area<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">33.2</span>,<span class="fl">33.2</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">birds.sampletable</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span><span class="op">(</span>Region.Label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span><span class="op">)</span>, each<span class="op">=</span><span class="fl">19</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                                Sample.Label<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html">rep</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">19</span>, times<span class="op">=</span><span class="fl">2</span><span class="op">)</span>,</span>
+<span>                                Effort<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="fl">0.208</span>, <span class="fl">0.401</span>, <span class="fl">0.401</span>, <span class="fl">0.299</span>, <span class="fl">0.350</span>,</span>
+<span>                                         <span class="fl">0.401</span>, <span class="fl">0.393</span>, <span class="fl">0.405</span>, <span class="fl">0.385</span>, <span class="fl">0.204</span>,</span>
+<span>                                         <span class="fl">0.039</span>, <span class="fl">0.047</span>, <span class="fl">0.204</span>, <span class="fl">0.271</span>, <span class="fl">0.236</span>,</span>
+<span>                                         <span class="fl">0.189</span>, <span class="fl">0.177</span>, <span class="fl">0.200</span>, <span class="fl">0.020</span><span class="op">)</span><span class="op">)</span></span></code></pre>
 </div>
 </div>
 <h1 id="simple-detection-function-model">Simple detection function
@@ -3458,16 +3491,15 @@ the problem</strong> of effort miscalculation if a species is not
 detected on all transects.</p>
 <div class="layout-chunk" data-layout="l-body">
 <div class="sourceCode">
-<pre class="sourceCode r"><code class="sourceCode r"><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fl">95</span>   <span class="co"># as per Buckland (2006)</span>
-<span class="va">onlycf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Distance/man/ds.html">ds</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">birds</span><span class="op">[</span><span class="va">birds</span><span class="op">$</span><span class="va">species</span><span class="op">==</span><span class="st">&quot;c&quot;</span>, <span class="op">]</span>, 
-             region_table <span class="op">=</span> <span class="va">birds.regiontable</span>,
-             sample_table <span class="op">=</span> <span class="va">birds.sampletable</span>,
-             trunc<span class="op">=</span><span class="va">tr</span>, convert_units<span class="op">=</span><span class="va">cu</span>, key<span class="op">=</span><span class="st">&quot;hn&quot;</span>, formula <span class="op">=</span> <span class="op">~</span><span class="va">Region.Label</span><span class="op">)</span>
-<span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">onlycf</span><span class="op">$</span><span class="va">dht</span><span class="op">$</span><span class="va">individuals</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_paper</a></span><span class="op">(</span>full_width<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">6</span>, background<span class="op">=</span><span class="st">&quot;salmon&quot;</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span>
-  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">7</span>, background<span class="op">=</span><span class="st">&quot;steelblue&quot;</span><span class="op">)</span>
-</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span><span class="va">tr</span> <span class="op">&lt;-</span> <span class="fl">95</span>   <span class="co"># as per Buckland (2006)</span></span>
+<span><span class="va">onlycf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Distance/man/ds.html">ds</a></span><span class="op">(</span>data<span class="op">=</span><span class="va">birds</span><span class="op">[</span><span class="va">birds</span><span class="op">$</span><span class="va">species</span><span class="op">==</span><span class="st">&quot;c&quot;</span>, <span class="op">]</span>, </span>
+<span>             region_table <span class="op">=</span> <span class="va">birds.regiontable</span>,</span>
+<span>             sample_table <span class="op">=</span> <span class="va">birds.sampletable</span>,</span>
+<span>             trunc<span class="op">=</span><span class="va">tr</span>, convert_units<span class="op">=</span><span class="va">cu</span>, key<span class="op">=</span><span class="st">&quot;hn&quot;</span>, formula <span class="op">=</span> <span class="op">~</span><span class="va">Region.Label</span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html">kable</a></span><span class="op">(</span><span class="va">onlycf</span><span class="op">$</span><span class="va">dht</span><span class="op">$</span><span class="va">individuals</span><span class="op">$</span><span class="va">summary</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html">kable_paper</a></span><span class="op">(</span>full_width<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">6</span>, background<span class="op">=</span><span class="st">&quot;salmon&quot;</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/column_spec.html">column_spec</a></span><span class="op">(</span><span class="fl">7</span>, background<span class="op">=</span><span class="st">&quot;steelblue&quot;</span><span class="op">)</span></span></code></pre>
 </div>
 <table class=" lightable-paper" style="font-family: &quot;Arial Narrow&quot;, arial, helvetica, sans-serif; width: auto !important; margin-left: auto; margin-right: auto;">
 <thead>

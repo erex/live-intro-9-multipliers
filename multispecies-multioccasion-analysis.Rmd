@@ -39,10 +39,12 @@ library(kableExtra)
 
 It is increasingly common for investigators to conduct surveys in which multiple species are detected and density estimates for several species are of interest. There are many ways of analysing such data sets, but care must be taken.  Not all approaches will produce correct density estimates. To demonstrate one of the ways to produce incorrect estimates, we will use the line transect survey data reported in @buckland2006.  This survey (and data file) recorded detections of four species of songbirds.  We conduct an analysis of chaffinch *(Fringilla coelebs)* (coded `c` in the data file), but similar results would arise with the other species.
 
-Begin by reading the flat file in a comma delimited format:
+Begin by reading the flat file in a comma delimited format. Note the URL for the data file is very long, double check that you can read the URL including the Github token.
 
 ```{r dataread}
-birds <- read.csv("https://synergy.st-andrews.ac.uk/ds-manda/files/2016/11/montrave-line.csv")
+URLpart1 <- "https://raw.githubusercontent.com/distanceexamples/Distance-multispecies/main/montrave-line.csv"
+URLpart2 <- "?token=GHSAT0AAAAAABP6QDHAQ677QTIJEKSK2WYEYWG4EYA"
+birds <- read.csv(file=paste0(URLpart1, URLpart2))
 ```
 
 # Survey design
@@ -62,7 +64,7 @@ The direct approach to producing a density estimate for the chaffinch would be t
 chaf <- birds[birds$species=="c", ]
 ```
 
-When the data are subset, the integrity of the survey design is not preserved.  A simple frequency table of the species-specific data frame flags up a number of transect/visit combinations where no chaffinches were detected.  The result is that the subset data frame suggests 3 of the 19 transects lacked chaffinch detections on the first visit and one of the 19 transects lacked chaffinch detections on the second visit.  
+When the data are subset, the integrity of the survey design is not preserved.  A simple frequency table of the species-specific data frame flags up a number of transect/visit combinations where no chaffinches were detected.  The result is that the subset data frame suggests 3 of the 19 transects lacked chaffinch detections on the first visit and one of the 19 transects lacked chaffinch detections on the second visit. This revelation, in itself, causes no problems for our estimate of density of chaffinches. 
 
 ```{r missingrows}
 detects <- table(chaf$Sample.Label, chaf$visit)
@@ -75,7 +77,7 @@ knitr::kable(detects, escape=FALSE) %>%
   
 ```
 
-But wait, the situation is even **worse** than the above table suggests.  Transect 12 does not appear in the table above because there were no detections on *either* visit.  Consequently, there were 4 transects without chaffinches on the first visit and 2 transects without chaffinches on the second visit.
+However, there is a problem hidden within the table above.  Transect 12 does not appear in the table because there were no detections of chaffinches on *either* visit.  Consequently, there were 4 transects without chaffinches on the first visit and 2 transects without chaffinches on the second visit, rather than the 3 transects and 1 transect you might mistakenly conclude do not have chaffinch detections if you relied completely upon the table.
 
 Let's see what the `ds()` function thinks about the survey effort using information from the species-specific data frame.
 
@@ -89,7 +91,7 @@ knitr::kable(chaf.wrong$dht$individuals$summary) %>%
 
 Examine the column labelled `k` (the number of transects) for each of the visits. Rather than the 19 transects that were surveyed on each visit, the `ds()` function erroneously believes there were only 15 transects surveyed on the first visit and 17 transects surveyed on the second visit.
 
-Note also the number of detections per kilometer; roughly 9 on the first visit and 7.7 on the second visit.  These encounter rates exclude kilometers of effort on transects where there were no detections.  We will return to this comparison later
+Note also the number of detections per kilometer; roughly 9 on the first visit and 7.7 on the second visit.  These encounter rates exclude kilometers of effort on transects where there were no detections.  We will return to this comparison later.
 
 # Use explicit data hierarchy
 
